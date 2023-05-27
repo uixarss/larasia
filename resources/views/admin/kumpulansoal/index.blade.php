@@ -1,0 +1,122 @@
+@extends('layouts.adtheme')
+
+@section('title-page')
+    <h1 class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0">
+        Kumpulan Soal
+    </h1>
+    <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
+        <li class="breadcrumb-item text-muted">
+            <a href="{{ route('admin.halamanutama.index') }}" class="text-muted text-hover-primary">Dashboard</a>
+        </li>
+        <li class="breadcrumb-item">
+            <span class="bullet bg-gray-400 w-5px h-2px"></span>
+        </li>
+        <li class="breadcrumb-item text-muted">Kumpulan Soal</li>
+    </ul>
+@endsection
+
+@section('content')
+    <div class="card card-flush h-lg-100">
+        <div class="card-header pt-5">
+            <h3 class="card-title align-items-start flex-column">
+                <span class="card-label fw-bold">List Dosen</span>
+            </h3>
+            <div class="card-toolbar">
+                <div class="d-flex align-items-center position-relative me-4">
+                    <i class="bi bi-search position-absolute translate-middle-y top-50 ms-4 fs-4"></i>
+                    <input type="text" id="table_search" class="form-control form-control form-control-solid bg-body fw-semibold fs-7 w-250px ps-11" placeholder="Search">
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <table id="table_data" class="table align-middle table-rounded border table-row-bordered table-row-gray-100 bg-white gs-5 gy-4">
+                <thead>
+                    <tr class="fw-bold text-muted bg-light">
+                        <th>NIDN</th>
+                        <th>Nama Dosen</th>
+                        <th>Mata Kuliah</th>
+                        <th>Program Studi</th>
+                        <th>Semester</th>
+                        <th>Tahun Ajaran</th>
+                        <th class="text-end">Opsi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($data_dosen as $dosen)
+                    <tr>
+                        <td>{{$dosen->dosen->nidn}}</td>
+                        <td>{{$dosen->dosen->nama_dosen}}</td>
+                        <td>{{$dosen->mapel->nama_mapel ?? ''}}</td>
+                        <td>{{$dosen->prodi->nama_program_studi}}</td>
+                        <td>{{$dosen->semester->nama_semester}}</td>
+                        <td>{{$dosen->tahunAjaran->nama_tahun_ajaran}}</td>
+                        <td class="text-end">
+                          <a href="{{route('admin.kumpulansoal.listSoal', [ 'id' => $dosen->id] )}}" type="button" class="btn btn-sm btn-primary">Lihat Materi</a>
+
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+@endsection
+
+@section('css-add')
+    <link rel="stylesheet" href="{{ asset('adtheme/plugins/custom/datatables/datatables.bundle.css') }}">
+@endsection
+
+@section('data-scripts')
+    <script src="{{ asset('adtheme/plugins/custom/datatables/datatables.bundle.js') }}"></script>
+    <script>
+        var ListData = function() {
+            var table = document.getElementById('table_data');
+            var datatable;
+            var toolbarBase;
+
+            // Private functions
+            var initDataTable = function() {
+                // Set date data order
+                const tableRows = table.querySelectorAll('tbody tr');
+
+                // Init datatable --- more info on datatables: https://datatables.net/manual/
+                datatable = $(table).DataTable({
+                    'order': [],
+                    "pageLength": 10,
+                    "lengthChange": true,
+                    "info": true,
+                    'columnDefs': [{
+                            orderable: false,
+                            targets: 6
+                        }, // Disable ordering on column 6 (actions)
+                    ]
+                });
+            }
+
+            var handleSearchDatatable = () => {
+                const filterSearch = document.getElementById('table_search');
+                filterSearch.addEventListener('keyup', function(e) {
+                    datatable.search(e.target.value).draw();
+                });
+            }
+
+            return {
+                // Public functions
+                init: function() {
+                    if (!table) {
+                        return;
+                    }
+
+                    initDataTable();
+                    handleSearchDatatable();
+
+                }
+            }
+        }();
+
+        // On document ready
+        KTUtil.onDOMContentLoaded(function() {
+            ListData.init();
+        });
+    </script>
+@endsection
